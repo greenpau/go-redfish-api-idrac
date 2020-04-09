@@ -1,0 +1,19 @@
+{
+    "error": {
+        "code": "Base.1.0.GeneralError",
+        "message": "A general error has occurred. See ExtendedInfo for more information.",
+        "@Message.ExtendedInfo": [
+        {
+            "@odata.type": "#Message.v1_0_0.Message",
+            "MessageId": "Base.1.2.AccessDenied",
+            "Message": "The authentication credentials included with this request are missing or invalid.",
+            "MessageArgs": [],
+            "MessageArgs@odata.count": 0,
+            "RelatedProperties":[],
+            "RelatedProperties@odata.count": 0,
+            "Severity": "Critical",
+            "Resolution": "Attempt to ensure that the URI is correct and that the service has the appropriate credentials."
+        }
+        ]
+    }
+}

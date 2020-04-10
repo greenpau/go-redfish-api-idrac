@@ -30,6 +30,7 @@ linter:
 	@echo "Running lint checks"
 	@golint cmd/client/*.go
 	@golint pkg/client/*.go
+	@golint internal/client/*.go
 	@echo "PASS: golint"
 
 test: covdir linter
@@ -44,13 +45,15 @@ covdir:
 	@mkdir -p .coverage
 
 coverage:
+	@#go tool cover -help
 	@go tool cover -html=.coverage/coverage.out -o .coverage/coverage.html
+	@go test -covermode=count -coverprofile=.coverage/coverage.out ./pkg/client/*.go
+	@go tool cover -func=.coverage/coverage.out | grep -v "100.0"
 
 docs:
 	@mkdir -p .doc
-	@godoc -html github.com/greenpau/go-idrac-redfish-api/pkg/client > .doc/index.html
-	@echo "Run to serve docs:"
-	@echo "    godoc -goroot .doc/ -html -http \":5000\""
+	@go doc -all pkg/client > .doc/index.txt
+	@cat .doc/index.txt
 
 clean:
 	@rm -rf .doc
@@ -59,11 +62,14 @@ clean:
 
 qtest:
 	@echo "Perform quick tests ..."
-	@go test -v -run TestClient ./pkg/client/*.go
+	@#go test -v -run TestClient ./pkg/client/*.go
 	@#go test -v -run TestParseInfoJsonOutput ./pkg/client/*.go
+	@#go test -v -run TestParseResourceJsonOutput ./pkg/client/*.go
+	@go test -v -run TestParseComputerSystemJsonOutput ./pkg/client/*.go
 
 dep:
 	@echo "Making dependencies check ..."
-	@golint || go get -u golang.org/x/lint/golint
+	@go get -u golang.org/x/lint/golint
+	@go get -u golang.org/x/tools/cmd/godoc
 	@#echo "Clean GOPATH/pkg/dep/sources/ if necessary"
 	@#rm -rf $GOPATH/pkg/dep/sources/https---github.com-greenpau*

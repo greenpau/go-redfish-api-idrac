@@ -5,6 +5,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/greenpau/go-idrac-redfish-api/pkg/client"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -28,6 +29,7 @@ var (
 func main() {
 	// Initialize API client
 	cli := client.NewClient()
+	supportedOperations := cli.GetOperations()
 
 	// Initialize CLI arguments
 	var logLevel string
@@ -41,13 +43,13 @@ func main() {
 	var apiResource string
 	var configFile string
 	var port int
-	var secure bool
+	var validateServerCert bool
 
 	flag.StringVar(&configFile, "config", "redfish.yaml", "configuration file")
 	flag.StringVar(&host, "host", "", "target hostname or ip address")
 	flag.IntVar(&port, "port", 443, "target port")
 	flag.StringVar(&proto, "proto", "https", "transport protocol, either https or http")
-	flag.BoolVar(&secure, "secure", false, "validate certificates (default: false)")
+	flag.BoolVar(&validateServerCert, "validate-server-cert", false, "Verify the status of the server certificate")
 	flag.StringVar(&authUser, "username", "", "username")
 	flag.StringVar(&authPass, "password", "", "password")
 	flag.StringVar(&apiOperation, "operation", "", "operation")
@@ -60,8 +62,8 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Usage: %s [arguments]\n\n", appName)
 		flag.PrintDefaults()
 		fmt.Fprintf(os.Stderr, "\nOperations:\n")
-		for opName, opDescr := range cli.GetOperations() {
-			fmt.Fprintf(os.Stderr, "  - %s: %s\n", opName, opDescr)
+		for opName, op := range supportedOperations {
+			fmt.Fprintf(os.Stderr, "  - %s: %s\n", opName, op.Description)
 		}
 		fmt.Fprintf(os.Stderr, "\nDocumentation: %s\n\n", appDocPath)
 	}
@@ -104,8 +106,17 @@ func main() {
 	viper.AddConfigPath("$HOME/.redfish")
 	viper.BindEnv("username")
 	viper.BindEnv("password")
+	viper.BindEnv("host")
 
 	// Get environment variables
+
+	if host == "" {
+		if v := viper.Get("host"); v != nil {
+			host = viper.Get("host").(string)
+			log.Debugf("Setting host '%s' via IDRAC_API_HOST environment variable")
+		}
+	}
+
 	if authUser == "" {
 		if v := viper.Get("username"); v != nil {
 			authUser = viper.Get("username").(string)
@@ -156,9 +167,9 @@ func main() {
 	if err := cli.SetPassword(authPass); err != nil {
 		log.Fatalf("--password error: %s", err)
 	}
-	if secure {
-		if err := cli.SetSecure(); err != nil {
-			log.Fatalf("--secure error: %s", err)
+	if validateServerCert {
+		if err := cli.SetValidateServerCertificate(); err != nil {
+			log.Fatalf("--validate-server-cert error: %s", err)
 		}
 	}
 
@@ -173,14 +184,17 @@ func main() {
 	log.Debugf("Host: %s", host)
 	log.Debugf("Port: %d", port)
 	log.Debugf("Protocol: %s", proto)
-	log.Debugf("Certificate validation: %t", secure)
+	log.Debugf("Certificate validation: %t", validateServerCert)
 	log.Debugf("Username: %s", authUser)
 
 	timerStartTime := time.Now()
 
 	if apiOperation != "" {
+		if _, exists := supportedOperations[apiOperation]; !exists {
+			log.Fatalf("the --operation %s is unsupported", apiOperation)
+		}
 		switch apiOperation {
-		case "info":
+		case "get-info":
 			info, err := cli.GetInfo()
 			if err != nil {
 				log.Fatalf("%s", err)
@@ -190,8 +204,33 @@ func main() {
 			fmt.Fprintf(os.Stdout, "Service Tag: %s\n", info.ServiceTag)
 			fmt.Fprintf(os.Stdout, "Manager MAC Address: %s\n", info.ManagerMACAddress)
 			fmt.Fprintf(os.Stdout, "Redfish API Version: %s\n", info.RedfishVersion)
+		case "get-systems":
+			computerSystems, err := cli.GetComputerSystems()
+			if err != nil {
+				log.Fatalf("%s", err)
+			}
+			fmt.Fprintf(os.Stdout, "Number of Computer Systems: %d\n", len(computerSystems))
+			fmt.Fprintf(os.Stdout, "---------------------------------\n")
+			for _, cs := range computerSystems {
+				if cs.Manufacturer != "" {
+					fmt.Fprintf(os.Stdout, "System: %s | Manufacturer: %s\n", cs.ID, cs.Manufacturer)
+				}
+				if cs.Model != "" {
+					fmt.Fprintf(os.Stdout, "System: %s | Model: %s\n", cs.ID, cs.Model)
+				}
+				if cs.SKU != "" {
+					fmt.Fprintf(os.Stdout, "System: %s | SKU: %s\n", cs.ID, cs.SKU)
+				}
+				if cs.PartNumber != "" {
+					fmt.Fprintf(os.Stdout, "System: %s | SKU: %s\n", cs.ID, cs.PartNumber)
+				}
+				if cs.BiosVersion != "" {
+					fmt.Fprintf(os.Stdout, "System: %s | BIOS Version: %s\n", cs.ID, cs.BiosVersion)
+				}
+				spew.Dump(cs)
+			}
 		default:
-			log.Fatalf("the --operation %s is unsupported", apiOperation)
+			log.Fatalf("the --operation %s is supported by API, but not this utility", apiOperation)
 		}
 	} else {
 		res, err := cli.GetResource(apiResource)

@@ -1,5 +1,7 @@
 # go-idrac-redfish-api
 
+![build](https://github.com/greenpau/go-idrac-redfish-api/workflows/core/badge.svg?branch=master)
+
 iDRAC Redfish API client library written in Go.
 
 ## Table of Contents

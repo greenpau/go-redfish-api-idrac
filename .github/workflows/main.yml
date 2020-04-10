@@ -1,0 +1,59 @@
+---
+name: build
+
+on:
+  push:
+    branches:
+    - master
+  pull_request:
+    branches:
+    - master
+
+jobs:
+  core:
+    name: Build
+    runs-on: ubuntu-latest
+    env:
+      GOBIN: /home/runner/.local/bin
+    steps:
+    - name: Set up Go 1.13
+      uses: actions/setup-go@v1
+      with:
+        go-version: 1.13
+      id: go
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v2
+    - name: Setup Environment
+      run: |
+        mkdir -p /home/runner/.local/bin
+        echo "::add-path::/home/runner/.local/bin"
+        mkdir -p .coverage
+        echo "*** Current Directory ***"
+        pwd
+        echo "*** Environment Variables ***"
+        env | sort
+        echo "*** Executable Path ***"
+        echo "$PATH" | tr ':' '\n'
+        echo "*** Workspace Files ***"
+        find .
+        which make
+    - name: Install prerequisites
+      run: |
+        go install golang.org/x/lint/golint
+    - name: Validate prerequisites
+      run: |
+        echo "*** Local binaries ***"
+        find /home/runner/.local/bin
+    - name: Run lint tests
+      run: |
+        golint cmd/client/*.go
+        golint pkg/client/*.go
+    - name: Run Go tests
+      run: go test -v -coverprofile=.coverage/coverage.out ./pkg/client/*.go
+    - name: Generate coverage report
+      run: go tool cover -html=.coverage/coverage.out -o .coverage/coverage.html
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v1
+      with:
+        name: Test Coverage Report
+        path: .coverage/coverage.html

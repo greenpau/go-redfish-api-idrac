@@ -3,6 +3,7 @@
 package client
 
 import (
+	"encoding/json"
 	"fmt"
 	. "github.com/greenpau/go-idrac-redfish-api/internal/client"
 	"github.com/iancoleman/strcase"
@@ -193,6 +194,47 @@ func convertFieldToTag(s string) string {
 	return s
 }
 
+func isParserCompliant(resource interface{}, expResourceMap map[string]interface{}) ([]string, bool) {
+	result := true
+	output := []string{}
+
+	resourceInstance := reflect.TypeOf(resource).Elem()
+	resourceName := fmt.Sprintf("%s", resourceInstance.Name())
+	resourceMap := make(map[string]bool)
+
+	for i := 0; i < resourceInstance.NumField(); i++ {
+		tagName := "json"
+		resourceField := resourceInstance.Field(i)
+		tagValue := resourceField.Tag.Get(tagName)
+		if tagValue == "" {
+			tagValue = fmt.Sprintf("%s", resourceField.Name)
+		}
+		resourceMap[tagValue] = true
+	}
+
+	for k, v := range expResourceMap {
+		if _, exists := resourceMap[k]; !exists {
+			output = append(output, fmt.Sprintf(
+				"    %s %s", k, v,
+			))
+			result = false
+		}
+	}
+
+	if len(output) > 0 {
+		output = append([]string{fmt.Sprintf(
+			"Fix the following struct:\n\ntype %s struct {",
+			resourceName,
+		)}, output...)
+	}
+
+	if len(output) > 0 {
+		return []string{strings.Join(output, "\n")}, result
+	}
+
+	return output, result
+}
+
 func isStructCompliant(resource interface{}) ([]string, bool) {
 	result := true
 	output := []string{}
@@ -208,9 +250,6 @@ func isStructCompliant(resource interface{}) ([]string, bool) {
 		))
 		return output, false
 	}
-
-	//output = append(output, fmt.Sprintf("Type: %s", resourceInstance.Name()))
-	//output = append(output, fmt.Sprintf("Kind: %s", resourceInstance.Kind()))
 
 	for i := 0; i < resourceInstance.NumField(); i++ {
 		for _, tagName := range []string{"json", "xml", "yaml"} {
@@ -262,6 +301,8 @@ func isStructCompliant(resource interface{}) ([]string, bool) {
 
 func TestComputerSystemStruct(t *testing.T) {
 	var isFailedTest bool
+	var complianceMessages []string
+	var compliant bool
 	var timerStartTime time.Time
 	timerStartTime = time.Now()
 
@@ -289,23 +330,43 @@ func TestComputerSystemStruct(t *testing.T) {
 	cli.SetUsername("admin")
 	cli.SetPassword("secret")
 
+	// Define path to ComputerSystem resource.
 	resourcePath := "/redfish/v1/Systems/System.Embedded.1/"
-	resourceBytes, err := cli.callAPI("GET", "", resourcePath, []byte{})
-	if err != nil {
-		t.Fatalf("%s", err)
-	}
-	t.Logf("%s", resourceBytes)
 
+	// Test tag compliance of ComputerSystem struct
 	resource, err := cli.GetComputerSystemByResourceID(resourcePath)
 	if err != nil {
 		t.Fatalf("%s", err)
 	}
 
-	complianceMessages, compliant := isStructCompliant(resource)
+	complianceMessages, compliant = isStructCompliant(resource)
 	if !compliant {
 		isFailedTest = true
 	}
+	for _, entry := range complianceMessages {
+		t.Logf("%s", entry)
+	}
 
+	// Test tag compliance of computerSystemResponse struct
+	resourceBytes, err := cli.callAPI("GET", "", resourcePath, []byte{})
+	if err != nil {
+		t.Fatalf("%s", err)
+	}
+	//t.Logf("%s", resourceBytes)
+	rawResource := &computerSystemResponse{}
+	if err := json.Unmarshal(resourceBytes, rawResource); err != nil {
+		t.Fatalf("parsing computerSystemResponse error: %s", err)
+	}
+
+	var rawResourceMap map[string]interface{}
+	if err := json.Unmarshal(resourceBytes, &rawResourceMap); err != nil {
+		t.Fatalf("unmarshal computerSystemResponse error: %s", err)
+	}
+
+	complianceMessages, compliant = isParserCompliant(rawResource, rawResourceMap)
+	if !compliant {
+		isFailedTest = true
+	}
 	for _, entry := range complianceMessages {
 		t.Logf("%s", entry)
 	}

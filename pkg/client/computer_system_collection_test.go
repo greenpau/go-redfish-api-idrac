@@ -10,6 +10,7 @@ import (
 )
 
 func TestGetComputerSystems(t *testing.T) {
+	testFailed := 0
 	var timerStartTime time.Time
 
 	// Set DEBUG logging level
@@ -35,10 +36,26 @@ func TestGetComputerSystems(t *testing.T) {
 	cli.SetProtocol(server.NonTLS.Protocol)
 	cli.SetUsername("admin")
 	cli.SetPassword("secret")
+
+	computerSystemCollection, err := cli.GetComputerSystemCollection()
+	if err != nil {
+		t.Fatalf("%s", err)
+	}
+
+	complianceMessages, compliant := isStructCompliant(computerSystemCollection)
+	if !compliant {
+		testFailed++
+	}
+
+	for _, entry := range complianceMessages {
+		t.Logf("%s", entry)
+	}
+
 	computerSystems, err := cli.GetComputerSystems()
 	if err != nil {
 		t.Fatalf("%s", err)
 	}
+
 	t.Logf("Number of Computer Systems: %d\n", len(computerSystems))
 	t.Logf("---------------------------------\n")
 	for _, cs := range computerSystems {
@@ -59,4 +76,7 @@ func TestGetComputerSystems(t *testing.T) {
 		}
 	}
 	t.Logf("client: took %s", time.Since(timerStartTime))
+	if testFailed > 0 {
+		t.Fatalf("Failed %d tests", testFailed)
+	}
 }

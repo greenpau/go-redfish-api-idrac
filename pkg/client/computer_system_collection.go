@@ -21,7 +21,7 @@ type computerSystemCollectionCounters struct {
 
 // ComputerSystemCollection represents an instance of Redfish ComputerSystemCollection.
 type ComputerSystemCollection struct {
-	OData           *ODataAnnotation
+	OData           *ODataAnnotation                 `yaml:"odata" json:"odata" xml:"odata"`
 	Name            string                           `yaml:"name" json:"name" xml:"name"`
 	Description     string                           `yaml:"description" json:"description" xml:"description"`
 	Counters        computerSystemCollectionCounters `yaml:"counters" json:"counters" xml:"counters"`

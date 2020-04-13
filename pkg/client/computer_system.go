@@ -44,8 +44,8 @@ type computerSystemCounters struct {
 
 // ComputerSystem represents an instance of Redfish ComputerSystem.
 type ComputerSystem struct {
-	ID           string `yaml:"id" json:"id" xml:"id"`
-	OData        *ODataAnnotation
+	ID           string                  `yaml:"id" json:"id" xml:"id"`
+	OData        *ODataAnnotation        `yaml:"odata" json:"odata" xml:"odata"`
 	BiosVersion  string                  `yaml:"bios_version" json:"bios_version" xml:"bios_version"`
 	Manufacturer string                  `yaml:"manufacturer" json:"manufacturer" xml:"manufacturer"`
 	Model        string                  `yaml:"model" json:"model" xml:"model"`

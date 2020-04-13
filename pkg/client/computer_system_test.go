@@ -4,9 +4,14 @@ package client
 
 import (
 	"fmt"
+	. "github.com/greenpau/go-idrac-redfish-api/internal/client"
+	"github.com/iancoleman/strcase"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"reflect"
+	"strings"
 	"testing"
+	"time"
 )
 
 func TestParseComputerSystemJsonOutput(t *testing.T) {
@@ -180,4 +185,134 @@ func TestParseComputerSystemJsonOutput(t *testing.T) {
 	if testFailed > 0 {
 		t.Fatalf("Failed %d tests", testFailed)
 	}
+}
+
+func convertFieldToTag(s string) string {
+	s = strings.Replace(s, "OData", "odata", -1)
+	s = strcase.ToSnake(s)
+	return s
+}
+
+func isStructCompliant(resource interface{}) ([]string, bool) {
+	result := true
+	output := []string{}
+
+	resourceInstance := reflect.TypeOf(resource).Elem()
+	resourceType := fmt.Sprintf("%s", resourceInstance.Name())
+	resourceKind := fmt.Sprintf("%s", resourceInstance.Kind())
+
+	if resourceKind != "struct" {
+		output = append(output, fmt.Sprintf(
+			"FAIL: %s resource kind is unsupported",
+			resourceKind,
+		))
+		return output, false
+	}
+
+	//output = append(output, fmt.Sprintf("Type: %s", resourceInstance.Name()))
+	//output = append(output, fmt.Sprintf("Kind: %s", resourceInstance.Kind()))
+
+	for i := 0; i < resourceInstance.NumField(); i++ {
+		for _, tagName := range []string{"json", "xml", "yaml"} {
+			resourceField := resourceInstance.Field(i)
+			tagValue := resourceField.Tag.Get(tagName)
+			if tagValue == "" {
+				result = false
+				output = append(output, fmt.Sprintf(
+					"FAIL: %s tag not found in %s.%s.%s (%v)",
+					tagName,
+					resourceType,
+					resourceInstance.Name(),
+					resourceField.Name,
+					resourceField.Type,
+				))
+				continue
+			}
+			expTagValue := convertFieldToTag(resourceField.Name)
+			if tagValue != expTagValue {
+				result = false
+				output = append(output, fmt.Sprintf(
+					"FAIL: %s tag mismatch found in %s.%s.%s (%v): %s (actual) vs. %s (expected)",
+					tagName,
+					resourceType,
+					resourceInstance.Name(),
+					resourceField.Name,
+					resourceField.Type,
+					tagValue,
+					expTagValue,
+				))
+				continue
+
+			}
+
+			output = append(output, fmt.Sprintf(
+				"PASS: %s tag is compliant %s.%s (%v), %s: %v",
+				tagName,
+				resourceType,
+				resourceField.Name,
+				resourceField.Type,
+				tagName,
+				tagValue,
+			))
+		}
+	}
+
+	return output, result
+}
+
+func TestComputerSystemStruct(t *testing.T) {
+	var isFailedTest bool
+	var timerStartTime time.Time
+	timerStartTime = time.Now()
+
+	// Set DEBUG logging level
+	logLevel, _ := log.ParseLevel("debug")
+	log.SetLevel(logLevel)
+
+	// Create web server instance
+	endpoints := map[string]string{
+		"/redfish/v1/":                           "root_1.json",
+		"/redfish/v1/Systems/":                   "computer_system_collection_1.json",
+		"/redfish/v1/Systems/System.Embedded.1/": "computer_system_1.json",
+	}
+	server, err := NewMockTestServer(endpoints, false)
+	if err != nil {
+		t.Fatalf("Failed to start mock test server: %s", err)
+	}
+	defer server.Close()
+
+	// Initialize client
+	cli := NewClient()
+	cli.SetHost(server.NonTLS.Hostname)
+	cli.SetPort(server.NonTLS.Port)
+	cli.SetProtocol(server.NonTLS.Protocol)
+	cli.SetUsername("admin")
+	cli.SetPassword("secret")
+
+	resourcePath := "/redfish/v1/Systems/System.Embedded.1/"
+	resourceBytes, err := cli.callAPI("GET", "", resourcePath, []byte{})
+	if err != nil {
+		t.Fatalf("%s", err)
+	}
+	t.Logf("%s", resourceBytes)
+
+	resource, err := cli.GetComputerSystemByResourceID(resourcePath)
+	if err != nil {
+		t.Fatalf("%s", err)
+	}
+
+	complianceMessages, compliant := isStructCompliant(resource)
+	if !compliant {
+		isFailedTest = true
+	}
+
+	for _, entry := range complianceMessages {
+		t.Logf("%s", entry)
+	}
+
+	t.Logf("client: took %s", time.Since(timerStartTime))
+	if isFailedTest {
+		t.Fatalf("Failed")
+	}
+
 }

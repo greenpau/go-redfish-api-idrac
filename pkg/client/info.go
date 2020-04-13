@@ -62,7 +62,7 @@ type infoResponse struct {
 // Info contains system information. The information in the structure
 // is from querying Root service.
 type Info struct {
-	OData             *ODataAnnotation `yaml:"odata_annotations" json:"odata_annotations" xml:"odata_annotations"`
+	OData             *ODataAnnotation `yaml:"odata" json:"odata" xml:"odata"`
 	Product           string           `yaml:"product" json:"product" xml:"product"`
 	ServiceTag        string           `yaml:"service_tag" json:"service_tag" xml:"service_tag"`
 	ManagerMACAddress string           `yaml:"manager_mac_address" json:"manager_mac_address" xml:"manager_mac_address"`

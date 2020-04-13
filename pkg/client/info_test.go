@@ -130,6 +130,17 @@ func TestParseInfoJsonOutput(t *testing.T) {
 		}
 
 		if err == nil {
+			if i == 0 {
+				complianceMessages, compliant := isStructCompliant(info)
+				if !compliant {
+					testFailed++
+				}
+
+				for _, entry := range complianceMessages {
+					t.Logf("%s", entry)
+				}
+			}
+
 			if (info.Product != test.exp.Product) && !test.shouldFail {
 				t.Logf("FAIL: Test %d: input '%s', expected to pass, but failed due to mismatch in '%s' field: '%v' (actual) vs. '%v' (expected)",
 					i, fp, "Product", info.Product, test.exp.Product)

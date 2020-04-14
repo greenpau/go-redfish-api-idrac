@@ -66,7 +66,8 @@ qtest:
 	@#go test -v -run TestParseInfoJsonOutput ./pkg/client/*.go
 	@#go test -v -run TestParseResourceJsonOutput ./pkg/client/*.go
 	@#go test -v -run TestParseComputerSystemJsonOutput ./pkg/client/*.go
-	@time richgo test -v -run TestComputerSystemStruct ./pkg/client/*.go
+	@#time richgo test -v -run TestComputerSystemStruct ./pkg/client/*.go
+	@go test -v -run TestComputerSystemStruct ./pkg/client/*.go
 
 dep:
 	@echo "Making dependencies check ..."

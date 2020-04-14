@@ -44,11 +44,33 @@ func TestParseComputerSystemJsonOutput(t *testing.T) {
 				SerialNumber: "CNCMU00201476Z",
 				SystemType:   "Physical",
 				UUID:         "73c016b0-76ff-4a58-a6f0-d22346f44046",
-				//HostName: "xxx",
-				//IndicatorLED: "xxx",
 				Counters: &computerSystemCounters{
-					PCIeDevices:   11,
-					PCIeFunctions: 16,
+					BootOrder:         2,
+					HostingRoles:      0,
+					Chassis:           1,
+					CooledBy:          16,
+					ManagedBy:         1,
+					PoweredBy:         2,
+					PCIeDevices:       11,
+					PCIeFunctions:     16,
+					TotalProcessors:   2,
+					LogicalProcessors: 40,
+					TotalSystemMemory: 256,
+				},
+				ActionEndpoints: []*ComputerSystemActionEndpoint{
+					&ComputerSystemActionEndpoint{
+						Action: "#ComputerSystem.Reset",
+						Target: "/redfish/v1/Systems/System.Embedded.1/Actions/ComputerSystem.Reset",
+						AllowedValues: []string{
+							"On",
+							"ForceOff",
+							"ForceRestart",
+							"GracefulShutdown",
+							"PushPowerButton",
+							"Nmi",
+							"PowerCycle",
+						},
+					},
 				},
 			},
 			shouldFail: false,
@@ -167,14 +189,17 @@ func TestParseComputerSystemJsonOutput(t *testing.T) {
 				continue
 			}
 			if !reflect.DeepEqual(resource.Counters, test.exp.Counters) && !test.shouldFail {
-
-				//t.Logf("ComputerSystem.Counters.BootOrder: %d", resource.Counters.BootOrder)
-				t.Logf("FAIL: Test %d: input '%s', expected to pass, but got value mismatch in '%s' field: ''%v' (actual) vs. '%v' (expected)",
+				t.Logf("FAIL: Test %d: input '%s', expected to pass, but got value mismatch in '%s' field: '%v' (actual) vs. '%v' (expected)",
 					i, fp, "Counters", *resource.Counters, *test.exp.Counters)
 				testFailed++
 				continue
 			}
-
+			if !reflect.DeepEqual(resource.ActionEndpoints, test.exp.ActionEndpoints) && !test.shouldFail {
+				t.Logf("FAIL: Test %d: input '%s', expected to pass, but got value mismatch in '%s' field: '%v' (actual) vs. '%v' (expected)",
+					i, fp, "ActionEndpoints", resource.ActionEndpoints[0], test.exp.ActionEndpoints[0])
+				testFailed++
+				continue
+			}
 		}
 
 		if test.shouldFail {
@@ -214,8 +239,30 @@ func isParserCompliant(resource interface{}, expResourceMap map[string]interface
 
 	for k, v := range expResourceMap {
 		if _, exists := resourceMap[k]; !exists {
+			if k == "@odata.type" || k == "@odata.context" || k == "@odata.id" {
+				continue
+			}
+			suggestedType := "TBD"
+			suggestedTypePrefix := strings.TrimRight(resourceName, "Response")
+			data := fmt.Sprintf("%s", v)
+			if strings.HasPrefix(data, "[map[@odata.id") {
+				suggestedType = "[]ODataAnnotation"
+			}
+			if strings.HasPrefix(data, "map[@odata.id") {
+				suggestedType = "ODataAnnotation"
+			}
+
+			if suggestedType == "TBD" && strings.HasSuffix(k, "Summary") {
+				suggestedType = suggestedTypePrefix + k
+			}
+			if suggestedType == "TBD" && strings.HasPrefix(data, "[map[") {
+				suggestedType = suggestedTypePrefix + k
+			}
 			output = append(output, fmt.Sprintf(
-				"    %s %s", k, v,
+				"    %s %s\n        DATA: %s", k, suggestedType, data,
+			))
+			output = append(output, fmt.Sprintf(
+				"    type %s struct {\n    }\n", suggestedType,
 			))
 			result = false
 		}
@@ -352,7 +399,6 @@ func TestComputerSystemStruct(t *testing.T) {
 	if err != nil {
 		t.Fatalf("%s", err)
 	}
-	//t.Logf("%s", resourceBytes)
 	rawResource := &computerSystemResponse{}
 	if err := json.Unmarshal(resourceBytes, rawResource); err != nil {
 		t.Fatalf("parsing computerSystemResponse error: %s", err)
@@ -366,6 +412,7 @@ func TestComputerSystemStruct(t *testing.T) {
 	complianceMessages, compliant = isParserCompliant(rawResource, rawResourceMap)
 	if !compliant {
 		isFailedTest = true
+		t.Logf("%s", resourceBytes)
 	}
 	for _, entry := range complianceMessages {
 		t.Logf("%s", entry)

@@ -1,0 +1,77 @@
+{
+  "@odata.context": "/redfish/v1/$metadata#NetworkAdapter.NetworkAdapter",
+  "@odata.id": "/redfish/v1/Chassis/System.Embedded.1/NetworkAdapters/NIC.Slot.2",
+  "@odata.type": "#NetworkAdapter.v1_2_0.NetworkAdapter",
+  "Assembly": {
+    "@odata.id": "/redfish/v1/Chassis/System.Embedded.1/Assembly"
+  },
+  "Controllers": [
+    {
+      "ControllerCapabilities": {
+        "DataCenterBridging": {
+          "Capable": true
+        },
+        "NPAR": {
+          "NparCapable": true,
+          "NparEnabled": false
+        },
+        "NPIV": {
+          "MaxDeviceLogins": 0,
+          "MaxPortLogins": 0
+        },
+        "NetworkDeviceFunctionCount": 2,
+        "NetworkPortCount": 2,
+        "VirtualizationOffload": {
+          "SRIOV": {
+            "SRIOVVEPACapable": true
+          },
+          "VirtualFunction": {
+            "DeviceMaxCount": 128,
+            "MinAssignmentGroupSize": 8,
+            "NetworkPortMaxCount": 64
+          }
+        }
+      },
+      "FirmwarePackageVersion": "21.40.25.31",
+      "Links": {
+        "NetworkDeviceFunctions": [
+          {
+            "@odata.id": "/redfish/v1/Chassis/System.Embedded.1/NetworkAdapters/NIC.Slot.2/NetworkDeviceFunctions/NIC.Slot.2-1-1"
+          },
+          {
+            "@odata.id": "/redfish/v1/Chassis/System.Embedded.1/NetworkAdapters/NIC.Slot.2/NetworkDeviceFunctions/NIC.Slot.2-2-1"
+          }
+        ],
+        "NetworkDeviceFunctions@odata.count": 2,
+        "NetworkPorts": [
+          {
+            "@odata.id": "/redfish/v1/Chassis/System.Embedded.1/NetworkAdapters/NIC.Slot.2/NetworkPorts/NIC.Slot.2-1"
+          },
+          {
+            "@odata.id": "/redfish/v1/Chassis/System.Embedded.1/NetworkAdapters/NIC.Slot.2/NetworkPorts/NIC.Slot.2-2"
+          }
+        ],
+        "NetworkPorts@odata.count": 2
+      }
+    }
+  ],
+  "Controllers@odata.count": 1,
+  "Description": "Network Adapter View",
+  "Id": "NIC.Slot.2",
+  "Manufacturer": "Broadcom Inc. and subsidiaries",
+  "Model": "BRCM 10GbE 2P 57412S Adptr",
+  "Name": "Network Adapter View",
+  "NetworkDeviceFunctions": {
+    "@odata.id": "/redfish/v1/Chassis/System.Embedded.1/NetworkAdapters/NIC.Slot.2/NetworkDeviceFunctions"
+  },
+  "NetworkPorts": {
+    "@odata.id": "/redfish/v1/Chassis/System.Embedded.1/NetworkAdapters/NIC.Slot.2/NetworkPorts"
+  },
+  "PartNumber": "0BMDEK",
+  "SerialNumber": "VNFCVRXDP8E3K3",
+  "Status": {
+    "Health": "OK",
+    "HealthRollup": "OK",
+    "State": "Enabled"
+  }
+}

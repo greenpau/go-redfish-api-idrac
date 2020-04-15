@@ -46,6 +46,41 @@ func NewMockTestServer(pathMap map[string]string, tlsEnabled bool) (*MockTestSer
 		NonTLS: &MockTestServerInstance{},
 		TLS:    &MockTestServerInstance{},
 	}
+	serverEndpoints := map[string]string{
+		"/redfish/v1/":                           "root_1.json",
+		"/redfish/v1/Systems/":                   "computer_system_collection_1.json",
+		"/redfish/v1/Systems/System.Embedded.1/": "computer_system_1.json",
+		"/redfish/v1/Systems/System.Embedded.1/NetworkInterfaces/":                                                           "network_interface_collection_1.json",
+		"/redfish/v1/Systems/System.Embedded.1/NetworkInterfaces/NIC.Integrated.1":                                           "network_interface_integrated_1.json",
+		"/redfish/v1/Chassis/System.Embedded.1/NetworkAdapters/NIC.Integrated.1/NetworkPorts/":                               "network_port_collection_integrated_1.json",
+		"/redfish/v1/Chassis/System.Embedded.1/NetworkAdapters/NIC.Integrated.1/":                                            "network_adapter_integrated_1.json",
+		"/redfish/v1/Chassis/System.Embedded.1/NetworkAdapters/NIC.Integrated.1/NetworkDeviceFunctions/":                     "network_device_function_collection_integrated_1.json",
+		"/redfish/v1/Chassis/System.Embedded.1/NetworkAdapters/NIC.Integrated.1/NetworkDeviceFunctions/NIC.Integrated.1-1-1": "network_device_function_integrated_1_1_1.json",
+		"/redfish/v1/Chassis/System.Embedded.1/NetworkAdapters/NIC.Integrated.1/NetworkDeviceFunctions/NIC.Integrated.1-2-1": "network_device_function_integrated_1_2_1.json",
+		"/redfish/v1/Chassis/System.Embedded.1/NetworkAdapters/NIC.Integrated.1/NetworkDeviceFunctions/NIC.Integrated.1-3-1": "network_device_function_integrated_1_3_1.json",
+		"/redfish/v1/Chassis/System.Embedded.1/NetworkAdapters/NIC.Integrated.1/NetworkDeviceFunctions/NIC.Integrated.1-4-1": "network_device_function_integrated_1_4_1.json",
+		"/redfish/v1/Chassis/System.Embedded.1/NetworkAdapters/NIC.Integrated.1/NetworkPorts/NIC.Integrated.1-1":             "network_port_integrated_1_1.json",
+		"/redfish/v1/Chassis/System.Embedded.1/NetworkAdapters/NIC.Integrated.1/NetworkPorts/NIC.Integrated.1-2":             "network_port_integrated_1_2.json",
+		"/redfish/v1/Chassis/System.Embedded.1/NetworkAdapters/NIC.Integrated.1/NetworkPorts/NIC.Integrated.1-3":             "network_port_integrated_1_3.json",
+		"/redfish/v1/Chassis/System.Embedded.1/NetworkAdapters/NIC.Integrated.1/NetworkPorts/NIC.Integrated.1-4":             "network_port_integrated_1_4.json",
+		"/redfish/v1/Systems/System.Embedded.1/NetworkInterfaces/NIC.Slot.2":                                                 "network_interface_slot_2.json",
+		"/redfish/v1/Chassis/System.Embedded.1/NetworkAdapters/NIC.Slot.2/":                                                  "network_adapter_slot_2.json",
+		"/redfish/v1/Chassis/System.Embedded.1/NetworkAdapters/NIC.Slot.2/NetworkDeviceFunctions/":                           "network_device_function_collection_slot_2.json",
+		"/redfish/v1/Chassis/System.Embedded.1/NetworkAdapters/NIC.Slot.2/NetworkDeviceFunctions/NIC.Slot.2-1-1":             "network_device_function_slot_2_1_1.json",
+		"/redfish/v1/Chassis/System.Embedded.1/NetworkAdapters/NIC.Slot.2/NetworkDeviceFunctions/NIC.Slot.2-2-1":             "network_device_function_slot_2_2_1.json",
+		"/redfish/v1/Chassis/System.Embedded.1/NetworkAdapters/NIC.Slot.2/NetworkPorts/":                                     "network_port_collection_slot_2.json",
+		"/redfish/v1/Chassis/System.Embedded.1/NetworkAdapters/NIC.Integrated.1/NetworkPorts/NIC.Slot.2-1":                   "network_port_slot_2_1.json",
+		"/redfish/v1/Chassis/System.Embedded.1/NetworkAdapters/NIC.Integrated.1/NetworkPorts/NIC.Slot.2-2":                   "network_port_slot_2_2.json",
+	}
+
+	if pathMap != nil {
+		for k, v := range pathMap {
+			if _, exists := serverEndpoints[k]; !exists {
+				serverEndpoints[k] = v
+			}
+		}
+	}
+
 	dataDir := "../../assets/responses"
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
@@ -90,7 +125,7 @@ func NewMockTestServer(pathMap map[string]string, tlsEnabled bool) (*MockTestSer
 			return
 		}
 
-		respFileName, respFileExists := pathMap[req.URL.Path]
+		respFileName, respFileExists := serverEndpoints[req.URL.Path]
 		if !respFileExists {
 			fp = fmt.Sprintf("%s/not_found_error_1.json", dataDir)
 			fc, err = ioutil.ReadFile(fp)

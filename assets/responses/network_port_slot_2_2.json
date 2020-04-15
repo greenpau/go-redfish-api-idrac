@@ -1,0 +1,53 @@
+{
+  "@odata.context": "/redfish/v1/$metadata#NetworkPort.NetworkPort",
+  "@odata.id": "/redfish/v1/Chassis/System.Embedded.1/NetworkAdapters/NIC.Slot.2/NetworkPorts/NIC.Slot.2-2",
+  "@odata.type": "#NetworkPort.v1_2_0.NetworkPort",
+  "ActiveLinkTechnology": "Ethernet",
+  "AssociatedNetworkAddresses": [
+    "B0:35:12:8D:F1:61"
+  ],
+  "CurrentLinkSpeedMbps": 0,
+  "Description": "Network Port View",
+  "EEEEnabled": false,
+  "FlowControlConfiguration": "None",
+  "FlowControlStatus": "None",
+  "Id": "NIC.Slot.2-2",
+  "LinkStatus": "Down",
+  "Name": "Network Port View",
+  "NetDevFuncMaxBWAlloc": [
+    {
+      "MaxBWAllocPercent": null,
+      "NetworkDeviceFunction": {
+        "@odata.id": "/redfish/v1/Chassis/System.Embedded.1/NetworkAdapters/NIC.Slot.2/NetworkDeviceFunctions/NIC.Slot.2-2-1"
+      }
+    }
+  ],
+  "NetDevFuncMaxBWAlloc@odata.count": 1,
+  "NetDevFuncMinBWAlloc": [
+    {
+      "MinBWAllocPercent": null,
+      "NetworkDeviceFunction": {
+        "@odata.id": "/redfish/v1/Chassis/System.Embedded.1/NetworkAdapters/NIC.Slot.2/NetworkDeviceFunctions/NIC.Slot.2-2-1"
+      }
+    }
+  ],
+  "NetDevFuncMinBWAlloc@odata.count": 1,
+  "PhysicalPortNumber": "2",
+  "Status": {
+    "State": "Enabled",
+    "Health": "OK",
+    "HealthRollup": "OK"
+  },
+  "SupportedEthernetCapabilities": [],
+  "SupportedEthernetCapabilities@odata.count": 0,
+  "SupportedLinkCapabilities": [
+    {
+      "AutoSpeedNegotiation": false,
+      "LinkNetworkTechnology": "Ethernet",
+      "LinkSpeedMbps": 0
+    }
+  ],
+  "SupportedLinkCapabilities@odata.count": 1,
+  "VendorId": "14e4",
+  "WakeOnLANEnabled": false
+}

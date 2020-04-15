@@ -1,0 +1,232 @@
+{
+  "@Redfish.Settings": {
+    "@odata.context": "/redfish/v1/$metadata#Settings.Settings",
+    "@odata.type": "#Settings.v1_2_1.Settings",
+    "SettingsObject": {
+      "@odata.id": "/redfish/v1/Systems/System.Embedded.1/NetworkAdapters/NIC.Integrated.1/NetworkDeviceFunctions/NIC.Integrated.1-1-1/Settings"
+    },
+    "SupportedApplyTimes": [
+      "OnReset",
+      "AtMaintenanceWindowStart",
+      "InMaintenanceWindowOnReset"
+    ]
+  },
+  "@odata.context": "/redfish/v1/$metadata#NetworkDeviceFunction.NetworkDeviceFunction",
+  "@odata.id": "/redfish/v1/Chassis/System.Embedded.1/NetworkAdapters/NIC.Integrated.1/NetworkDeviceFunctions/NIC.Integrated.1-1-1",
+  "@odata.type": "#NetworkDeviceFunction.v1_3_0.NetworkDeviceFunction",
+  "AssignablePhysicalPorts": [
+    {
+      "@odata.id": "/redfish/v1/Chassis/System.Embedded.1/NetworkAdapters/NIC.Integrated.1/NetworkPorts/NIC.Integrated.1-1"
+    }
+  ],
+  "AssignablePhysicalPorts@odata.count": 1,
+  "Description": "NetworkDeviceFunction",
+  "Ethernet": {
+    "MACAddress": "B0:35:12:3A:21:8C",
+    "MTUSize": null,
+    "PermanentMACAddress": "B0:35:12:3A:21:8C",
+    "VLAN": {
+      "VLANEnable": false,
+      "VLANId": 1
+    }
+  },
+  "FibreChannel": {
+    "BootTargets": [
+      {
+        "LUNID": null,
+        "WWPN": null
+      }
+    ],
+    "BootTargets@odata.count": 1,
+    "FCoEActiveVLANId": 1,
+    "FCoELocalVLANId": null,
+    "PermanentWWNN": null,
+    "PermanentWWPN": null,
+    "WWNN": null,
+    "WWNSource": "ProvidedByFabric",
+    "WWPN": null
+  },
+  "Id": "NIC.Integrated.1-1-1",
+  "Links": {
+    "PhysicalPortAssignment": {
+      "@odata.id": "/redfish/v1/Chassis/System.Embedded.1/NetworkAdapters/NIC.Integrated.1/NetworkPorts/NIC.Integrated.1-1"
+    }
+  },
+  "MaxVirtualFunctions": 64,
+  "Name": "NetworkDeviceFunction",
+  "NetDevFuncCapabilities": [
+    "Disabled",
+    "Ethernet"
+  ],
+  "NetDevFuncCapabilities@odata.count": 2,
+  "NetDevFuncType": "Ethernet",
+  "Oem": {
+    "Dell": {
+      "DellNIC": {
+        "BusNumber": 25,
+        "CableLengthMetres": 0,
+        "ControllerBIOSVersion": "214.0.253.1",
+        "DataBusWidth": "Unknown",
+        "DeviceDescription": "Integrated NIC 1 Port 1 Partition 1",
+        "EFIVersion": "214.0.253.1",
+        "FQDD": "NIC.Integrated.1-1-1",
+        "FamilyVersion": "21.40.25.31",
+        "IdentifierType": "SFP/SFP+/SFP28",
+        "InstanceID": "NIC.Integrated.1-1-1",
+        "LastSystemInventoryTime": "2020-01-22T18:32:53+00:00",
+        "LastUpdateTime": "2020-01-21T17:19:58+00:00",
+        "LinkDuplex": "FullDuplex",
+        "MediaType": "SFF_CAGE",
+        "NicMode": "Unknown",
+        "PCIDeviceID": "16d6",
+        "PCISubDeviceID": "4120",
+        "PCISubVendorID": "14e4",
+        "PCIVendorID": "14e4",
+        "PartNumber": "AFBR-709DMZ-IN3 ",
+        "PermanentFCOEMACAddress": "",
+        "PermanentiSCSIMACAddress": "",
+        "ProductName": "Broadcom Adv. Dual 10Gb Ethernet - B0:35:12:3A:21:8C",
+        "Protocol": "NIC",
+        "Revision": "G4.1",
+        "SerialNumber": "AD19153845T     ",
+        "SlotLength": "Unknown",
+        "SlotType": "Unknown",
+        "VendorName": "Broadcom Corp",
+        "iScsiOffloadMode": "Unknown",
+        "@odata.context": "/redfish/v1/$metadata#DellNIC.DellNIC",
+        "@odata.type": "#DellNIC.v1_1_0.DellNIC",
+        "@odata.id": "/redfish/v1/Dell/Systems/System.Embedded.1/NetworkDeviceFunctions/DellNIC/NIC.Integrated.1-1-1"
+      },
+      "DellNICPortMetrics": {
+        "DiscardedPkts": 0,
+        "FCCRCErrorCount": null,
+        "FCOELinkFailures": null,
+        "FCOEPktRxCount": null,
+        "FCOEPktTxCount": null,
+        "FCOERxPktDroppedCount": null,
+        "FQDD": "NIC.Integrated.1-1-1",
+        "LanFCSRxErrors": null,
+        "LanUnicastPktRXCount": null,
+        "LanUnicastPktTXCount": null,
+        "OSDriverState": "Operational",
+        "PartitionLinkStatus": null,
+        "PartitionOSDriverState": null,
+        "RDMARxTotalBytes": null,
+        "RDMARxTotalPackets": null,
+        "RDMATotalProtectionErrors": null,
+        "RDMATotalProtocolErrors": null,
+        "RDMATxTotalBytes": null,
+        "RDMATxTotalPackets": null,
+        "RDMATxTotalReadReqPkts": null,
+        "RDMATxTotalSendPkts": null,
+        "RDMATxTotalWritePkts": null,
+        "RXInputPowermW": 0.57,
+        "RxBroadcast": 67283282,
+        "RxBytes": 12096684577,
+        "RxErrorPktAlignmentErrors": 0,
+        "RxErrorPktFCSErrors": 0,
+        "RxFalseCarrierDetection": 0,
+        "RxJabberPkt": 0,
+        "RxMutlicastPackets": 18015586,
+        "RxPauseXOFFFrames": 0,
+        "RxPauseXONFrames": null,
+        "RxRuntPkt": 0,
+        "RxUnicastPackets": 6454600,
+        "StartStatisticTime": "2020-04-14T05:16:28-05:00",
+        "StatisticTime": "2020-04-14T18:20:12-05:00",
+        "TXBiasCurrentmA": 7.46,
+        "TXOutputPowermW": 0.59,
+        "TemperatureCel": 43.33,
+        "TemperatureStatus": "Ok",
+        "TxBroadcast": 25,
+        "TxBytes": 1658949392,
+        "TxErrorPktExcessiveCollision": 0,
+        "TxErrorPktLateCollision": 0,
+        "TxErrorPktMultipleCollision": 0,
+        "TxErrorPktSingleCollision": 0,
+        "TxMutlicastPackets": 7352343,
+        "TxPauseXOFFFrames": 128,
+        "TxPauseXONFrames": null,
+        "TxUnicastPackets": 1993023,
+        "VoltageStatus": "Ok",
+        "VoltageValueVolts": 3.21,
+        "@odata.context": "/redfish/v1/$metadata#DellNICPortMetrics.DellNICPortMetrics",
+        "@odata.type": "#DellNICPortMetrics.v1_0_0.DellNICPortMetrics",
+        "@odata.id": "/redfish/v1/Dell/Systems/System.Embedded.1/NetworkAdapters/NetworkDeviceFunctions/DellNICPortMetrics/NIC.Integrated.1-1-1"
+      },
+      "DellNICCapabilities": {
+        "BPESupport": "NotSupported",
+        "CongestionNotification": "NotSupported",
+        "ETS": "Supported",
+        "EVBModesSupport": "NotSupported",
+        "FCoEBootSupport": "NotSupported",
+        "FCoEMaxIOsPerSession": 0,
+        "FCoEMaxNPIVPerPort": 0,
+        "FCoEMaxNumberExchanges": 0,
+        "FCoEMaxNumberLogins": 0,
+        "FCoEMaxNumberOfFCTargets": 0,
+        "FCoEMaxNumberOutStandingCommands": 0,
+        "FCoEOffloadSupport": "NotSupported",
+        "FeatureLicensingSupport": "NotSupported",
+        "FlexAddressingSupport": "Supported",
+        "IPSecOffloadSupport": "NotSupported",
+        "MACSecSupport": "NotSupported",
+        "NWManagementPassThrough": "Supported",
+        "OSBMCManagementPassThrough": "Supported",
+        "OnChipThermalSensor": "Supported",
+        "OpenFlowSupport": "NotSupported",
+        "PXEBootSupport": "Supported",
+        "PartitionWOLSupport": "Supported",
+        "PersistencePolicySupport": "Supported",
+        "PriorityFlowControl": "Supported",
+        "RDMASupport": "Supported",
+        "RemotePHY": "NotSupported",
+        "TCPChimneySupport": "NotSupported",
+        "VEB": "Supported",
+        "VEBVEPAMultiChannel": "NotSupported",
+        "VEBVEPASingleChannel": "Supported",
+        "VirtualLinkControl": "NotSupported",
+        "iSCSIBootSupport": "Supported",
+        "iSCSIOffloadSupport": "NotSupported",
+        "uEFISupport": "Supported",
+        "@odata.context": "/redfish/v1/$metadata#DellNICCapabilities.DellNICCapabilities",
+        "@odata.type": "#DellNICCapabilities.v1_1_0.DellNICCapabilities",
+        "@odata.id": "/redfish/v1/Dell/Systems/System.Embedded.1/NetworkDeviceFunctions/DellNICCapabilities/NIC.Integrated.1-1-1"
+      }
+    }
+  },
+  "PhysicalPortAssignment": {
+    "@odata.id": "/redfish/v1/Chassis/System.Embedded.1/NetworkAdapters/NIC.Integrated.1/NetworkPorts/NIC.Integrated.1-1"
+  },
+  "Status": {
+    "State": "Enabled",
+    "Health": "OK",
+    "HealthRollup": "OK"
+  },
+  "iSCSIBoot": {
+    "AuthenticationMethod": "None",
+    "CHAPSecret": null,
+    "CHAPUsername": null,
+    "IPAddressType": "IPv4",
+    "IPMaskDNSViaDHCP": true,
+    "InitiatorDefaultGateway": "0.0.0.0",
+    "InitiatorIPAddress": "0.0.0.0",
+    "InitiatorName": "iqn.1995-05.com.broadcom.iscsiboot",
+    "InitiatorNetmask": "0.0.0.0",
+    "PrimaryDNS": "0.0.0.0",
+    "PrimaryLUN": 0,
+    "PrimaryTargetIPAddress": "0.0.0.0",
+    "PrimaryTargetName": null,
+    "PrimaryTargetTCPPort": 3260,
+    "PrimaryVLANEnable": false,
+    "PrimaryVLANId": null,
+    "SecondaryDNS": "0.0.0.0",
+    "SecondaryLUN": 0,
+    "SecondaryTargetIPAddress": "0.0.0.0",
+    "SecondaryTargetName": null,
+    "SecondaryTargetTCPPort": 3260,
+    "SecondaryVLANEnable": null,
+    "SecondaryVLANId": null,
+    "TargetInfoViaDHCP": false
+  }
+}

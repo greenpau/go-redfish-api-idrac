@@ -1,6 +1,6 @@
-# go-idrac-redfish-api
+# go-redfish-api-idrac
 
-![build](https://github.com/greenpau/go-idrac-redfish-api/workflows/build/badge.svg?branch=master)
+![build](https://github.com/greenpau/go-redfish-api-idrac/workflows/build/badge.svg?branch=main)
 
 iDRAC Redfish API client library written in Go.
 
@@ -12,7 +12,7 @@ iDRAC Redfish API client library written in Go.
 
 ## API Client
 
-By running `make`, you will generate `bin/go-idrac-redfish-api-client` binary.
+By running `make`, you will generate `bin/go-redfish-api-idrac-client` binary.
 
 Prior to using the binary, add your credentials via the following environment
 variables:
@@ -34,10 +34,10 @@ The binary searches for the file `$HOME/.redfish` directory.
 Next, use the API in the following manner:
 
 ```
-bin/go-idrac-redfish-api-client --host 10.10.10.10 --operation get-info --log.level debug
-bin/go-idrac-redfish-api-client --host 10.10.10.10 --operation get-systems --log.level debug
-bin/go-idrac-redfish-api-client --host 10.10.10.10 --resource "/redfish/v1/Systems" --log.level debug
-bin/go-idrac-redfish-api-client --host 10.10.10.10 --resource "/redfish/v1/Systems/System.Embedded.1" --log.level debug
+bin/go-redfish-api-idrac-client --host 10.10.10.10 --operation get-info --log.level debug
+bin/go-redfish-api-idrac-client --host 10.10.10.10 --operation get-systems --log.level debug
+bin/go-redfish-api-idrac-client --host 10.10.10.10 --resource "/redfish/v1/Systems" --log.level debug
+bin/go-redfish-api-idrac-client --host 10.10.10.10 --resource "/redfish/v1/Systems/System.Embedded.1" --log.level debug
 ```
 
 The list of available operations (`--operation` argument) follows:

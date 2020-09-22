@@ -6,7 +6,8 @@ import (
 	"flag"
 	"fmt"
 	"github.com/davecgh/go-spew/spew"
-	"github.com/greenpau/go-idrac-redfish-api/pkg/client"
+	"github.com/greenpau/go-redfish-api-idrac/pkg/client"
+	"github.com/greenpau/versioned"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"os"
@@ -16,15 +17,24 @@ import (
 )
 
 var (
-	appName        = "go-idrac-redfish-api-client"
-	appDescription = "iDRAC Redfish API Client"
-	appDocPath     = "https://github.com/greenpau/go-idrac-redfish-api/"
-	appVersion     = "[untracked]"
-	gitBranch      string
-	gitCommit      string
-	buildUser      string // whoami
-	buildDate      string // date -u
+	app        *versioned.PackageManager
+	appVersion string
+	gitBranch  string
+	gitCommit  string
+	buildUser  string
+	buildDate  string
 )
+
+func init() {
+	app = versioned.NewPackageManager("go-redfish-api-idrac-client")
+	app.Description = "iDRAC Redfish API Client"
+	app.Documentation = "https://github.com/greenpau/go-redfish-api-idrac/"
+	app.SetVersion(appVersion, "1.0.1")
+	app.SetGitBranch(gitBranch, "main")
+	app.SetGitCommit(gitCommit, "69dfd98")
+	app.SetBuildUser(buildUser, "")
+	app.SetBuildDate(buildDate, "")
+}
 
 func main() {
 	// Initialize API client
@@ -57,29 +67,20 @@ func main() {
 
 	flag.StringVar(&logLevel, "log.level", "info", "logging severity level")
 	flag.BoolVar(&isShowVersion, "version", false, "version information")
+
 	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "\n%s - %s\n\n", appName, appDescription)
-		fmt.Fprintf(os.Stderr, "Usage: %s [arguments]\n\n", appName)
+		fmt.Fprintf(os.Stderr, "\n%s - %s\n\n", app.Name, app.Description)
+		fmt.Fprintf(os.Stderr, "Usage: %s [arguments]\n\n", app.Name)
 		flag.PrintDefaults()
 		fmt.Fprintf(os.Stderr, "\nOperations:\n")
 		for opName, op := range supportedOperations {
 			fmt.Fprintf(os.Stderr, "  - %s: %s\n", opName, op.Description)
 		}
-		fmt.Fprintf(os.Stderr, "\nDocumentation: %s\n\n", appDocPath)
+		fmt.Fprintf(os.Stderr, "\nDocumentation: %s\n\n", app.Documentation)
 	}
 	flag.Parse()
 	if isShowVersion {
-		fmt.Fprintf(os.Stdout, "%s %s", appName, appVersion)
-		if gitBranch != "" {
-			fmt.Fprintf(os.Stdout, ", branch: %s", gitBranch)
-		}
-		if gitCommit != "" {
-			fmt.Fprintf(os.Stdout, ", commit: %s", gitCommit)
-		}
-		if buildUser != "" && buildDate != "" {
-			fmt.Fprintf(os.Stdout, ", build on %s by %s", buildDate, buildUser)
-		}
-		fmt.Fprint(os.Stdout, "\n")
+		fmt.Fprintf(os.Stdout, "%s\n", app.Banner())
 		os.Exit(0)
 	}
 	if level, err := log.ParseLevel(logLevel); err == nil {

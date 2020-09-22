@@ -5,7 +5,7 @@ package client
 import (
 	"encoding/json"
 	"fmt"
-	. "github.com/greenpau/go-idrac-redfish-api/internal/client"
+	. "github.com/greenpau/go-redfish-api-idrac/internal/client"
 	"github.com/iancoleman/strcase"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"

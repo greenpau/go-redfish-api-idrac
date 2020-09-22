@@ -4,10 +4,10 @@ name: build
 on:
   push:
     branches:
-    - master
+    - main
   pull_request:
     branches:
-    - master
+    - main
 
 jobs:
   core:
@@ -68,9 +68,9 @@ jobs:
     - name: Build binary
       run: make
     - name: Test binary
-      run: bin/go-idrac-redfish-api-client --version
+      run: bin/go-redfish-api-idrac-client --version
     #- name: Upload binary
     #  uses: actions/upload-artifact@v1
     #  with:
-    #    name: go-idrac-redfish-api-client
-    #    path: bin/go-idrac-redfish-api-client
+    #    name: go-redfish-api-idrac-client
+    #    path: bin/go-redfish-api-idrac-client

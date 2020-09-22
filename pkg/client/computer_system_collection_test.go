@@ -3,7 +3,7 @@
 package client
 
 import (
-	. "github.com/greenpau/go-idrac-redfish-api/internal/client"
+	. "github.com/greenpau/go-redfish-api-idrac/internal/client"
 	log "github.com/sirupsen/logrus"
 	"testing"
 	"time"

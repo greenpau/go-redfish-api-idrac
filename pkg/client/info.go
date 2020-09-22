@@ -24,31 +24,32 @@ type expandQueryProtocolFeatures struct {
 }
 
 type linkedAPIPath struct {
-	Sessions apiPath
+	Sessions ODataAnnotation
 }
 
 type infoResponse struct {
-	AccountService     apiPath
-	CertificateService apiPath
-	Chassis            apiPath
+	ODataAnnotation
+	AccountService     ODataAnnotation
+	CertificateService ODataAnnotation
+	Chassis            ODataAnnotation
 	Description        string
-	EventService       apiPath
-	Fabrics            apiPath
+	EventService       ODataAnnotation
+	Fabrics            ODataAnnotation
 	ID                 string `yaml:"Id" json:"Id" xml:"Id"`
-	JobService         apiPath
-	JSONSchemas        apiPath `yaml:"JsonSchemas" json:"JsonSchemas" xml:"JsonSchemas"`
+	JobService         ODataAnnotation
+	JSONSchemas        ODataAnnotation `yaml:"JsonSchemas" json:"JsonSchemas" xml:"JsonSchemas"`
 	Links              linkedAPIPath
-	Managers           apiPath
+	Managers           ODataAnnotation
 	Name               string
 	Product            string
 	Features           protocolFeatures
 	RedfishVersion     string
-	Registries         apiPath
-	SessionService     apiPath
-	Systems            apiPath
-	Tasks              apiPath
-	TelemetryService   apiPath
-	UpdateService      apiPath
+	Registries         ODataAnnotation
+	SessionService     ODataAnnotation
+	Systems            ODataAnnotation
+	Tasks              ODataAnnotation
+	TelemetryService   ODataAnnotation
+	UpdateService      ODataAnnotation
 	Oem                struct {
 		Dell struct {
 			IsBranded         int
@@ -61,31 +62,46 @@ type infoResponse struct {
 // Info contains system information. The information in the structure
 // is from querying Root service.
 type Info struct {
-	Product           string `yaml:"product" json:"product" xml:"product"`
-	ServiceTag        string `yaml:"service_tag" json:"service_tag" xml:"service_tag"`
-	ManagerMACAddress string `yaml:"manager_mac_address" json:"manager_mac_address" xml:"manager_mac_address"`
-	RedfishVersion    string `yaml:"redfish_version" json:"redfish_version" xml:"redfish_version"`
+	OData             *ODataAnnotation `yaml:"odata" json:"odata" xml:"odata"`
+	Product           string           `yaml:"product" json:"product" xml:"product"`
+	ServiceTag        string           `yaml:"service_tag" json:"service_tag" xml:"service_tag"`
+	ManagerMACAddress string           `yaml:"manager_mac_address" json:"manager_mac_address" xml:"manager_mac_address"`
+	RedfishVersion    string           `yaml:"redfish_version" json:"redfish_version" xml:"redfish_version"`
 }
 
-// NewInfoFromString returns Info instance from an input string.
-func NewInfoFromString(s string) (*Info, error) {
-	return NewInfoFromBytes([]byte(s))
+// GetInfo returns basic information about a system
+func (cli *Client) GetInfo() (*Info, error) {
+	resp, err := cli.callAPI("GET", "", cli.rootPath, []byte{})
+	if err != nil {
+		return nil, err
+	}
+	return newInfoFromBytes(resp)
 }
 
-// NewInfoFromBytes returns Info instance from an input byte array.
-func NewInfoFromBytes(s []byte) (*Info, error) {
+// newInfoFromString returns Info instance from an input string.
+func newInfoFromString(s string) (*Info, error) {
+	return newInfoFromBytes([]byte(s))
+}
+
+// newInfoFromBytes returns Info instance from an input byte array.
+func newInfoFromBytes(s []byte) (*Info, error) {
 	info := &Info{}
-	infoResponse := &infoResponse{}
-	err := json.Unmarshal(s, infoResponse)
+	response := &infoResponse{}
+	err := json.Unmarshal(s, response)
 	if err != nil {
 		return nil, fmt.Errorf("parsing error: %s, server response: %s", err, string(s[:]))
 	}
-	info.Product = infoResponse.Product
-	info.ServiceTag = infoResponse.Oem.Dell.ServiceTag
-	info.ManagerMACAddress = infoResponse.Oem.Dell.ManagerMACAddress
-	info.RedfishVersion = infoResponse.RedfishVersion
+	info.Product = response.Product
+	info.ServiceTag = response.Oem.Dell.ServiceTag
+	info.ManagerMACAddress = response.Oem.Dell.ManagerMACAddress
+	info.RedfishVersion = response.RedfishVersion
+	info.OData = &ODataAnnotation{
+		Context: response.Context,
+		ID:      response.ID,
+		Type:    response.Type,
+	}
 
-	if infoResponse.RedfishVersion == "" {
+	if response.RedfishVersion == "" {
 		return nil, fmt.Errorf("Error parsing the received response: %s", s)
 	}
 	return info, nil

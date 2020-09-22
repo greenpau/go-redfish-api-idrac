@@ -3,13 +3,8 @@
 package client
 
 import (
-	"encoding/base64"
-	"fmt"
+	. "github.com/greenpau/go-idrac-redfish-api/internal/client"
 	log "github.com/sirupsen/logrus"
-	"io/ioutil"
-	"net/http"
-	"net/http/httptest"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -17,90 +12,73 @@ import (
 
 func TestClient(t *testing.T) {
 	var timerStartTime time.Time
+
+	// Set DEBUG logging level
 	logLevel, _ := log.ParseLevel("debug")
 	log.SetLevel(logLevel)
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
-		var err error
-		var fp string
-		var fc []byte
-		dataDir := "../../assets/responses"
-		pathMap := map[string]string{
-			"/redfish/v1":  "root_1.json",
-			"/redfish/v1/": "root_1.json",
-		}
 
-		isAuthError := true
-		authHeader := req.Header.Get("Authorization")
-		if strings.HasPrefix(authHeader, "Basic ") {
-			authHeader = strings.TrimLeft(authHeader, "Basic")
-			authHeader = strings.TrimSpace(authHeader)
-			if b, err := base64.StdEncoding.DecodeString(authHeader); err == nil {
-				if string(b) == "admin:secret" {
-					isAuthError = false
-				}
-			}
-		}
-
-		if isAuthError {
-			fp = fmt.Sprintf("%s/access_denied_error_1.json", dataDir)
-			fc, err = ioutil.ReadFile(fp)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-			http.Error(w, string(fc), http.StatusNotFound)
-			return
-		}
-
-		if req.Method != "GET" {
-			http.Error(w, "Bad Request, expecting GET", http.StatusBadRequest)
-			return
-		}
-
-		respFileName, respFileExists := pathMap[req.URL.Path]
-
-		if !respFileExists {
-			fp = fmt.Sprintf("%s/not_found_error_1.json", dataDir)
-			fc, err = ioutil.ReadFile(fp)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-			http.Error(w, string(fc), http.StatusNotFound)
-			return
-		}
-
-		fp = fmt.Sprintf("%s/%s", dataDir, respFileName)
-		fc, err = ioutil.ReadFile(fp)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		w.Write(fc)
-	})
-	server := httptest.NewServer(mux)
+	// Create web server instance
+	endpoints := map[string]string{
+		"/redfish/v1/": "root_1.json",
+	}
+	server, err := NewMockTestServer(endpoints, true)
+	if err != nil {
+		t.Fatalf("Failed to start mock test server: %s", err)
+	}
 	defer server.Close()
 
-	srv := strings.Split(server.URL, ":")
-	proto := srv[0]
-	port, _ := strconv.Atoi(srv[2])
-
-	t.Logf("Server URL: %s", server.URL)
-
+	// Initialize client
 	cli := NewClient()
-	cli.SetHost("127.0.0.1")
-	cli.SetPort(port)
-	cli.SetProtocol(proto)
+
+	t.Logf("client: testing SetHost()")
+	if err := cli.SetHost(""); err == nil {
+		t.Fatalf("expected failure, but succeeded")
+	}
+	cli.SetHost(server.NonTLS.Hostname)
+
+	t.Logf("client: testing SetPort()")
+	if err := cli.SetPort(0); err == nil {
+		t.Fatalf("expected failure, but succeeded")
+	}
+	cli.SetPort(server.NonTLS.Port)
+
+	t.Logf("client: testing SetProtocol()")
+	if err := cli.SetProtocol("ssh"); err == nil {
+		t.Fatalf("expected failure, but succeeded")
+	}
+	if err := cli.SetProtocol("https"); err != nil {
+		t.Fatalf("expected success, but failed")
+	}
+	cli.SetProtocol(server.NonTLS.Protocol)
+
+	t.Logf("client: testing SetUsername()")
+	if err := cli.SetUsername(""); err == nil {
+		t.Fatalf("expected failure, but succeeded")
+	}
 	cli.SetUsername("admin")
-	cli.SetPassword("badSecret")
+
+	t.Logf("client: testing SetPassword()")
+	if err := cli.SetPassword(""); err == nil {
+		t.Fatalf("expected failure, but succeeded")
+	}
+
+	t.Logf("client: testing SetValidateServerCertificate()")
+	if err := cli.SetValidateServerCertificate(); err != nil {
+		t.Fatalf("expected success, but failed")
+	}
+
+	t.Logf("client: testing GetOperations()")
+	for opName, opDescr := range cli.GetOperations() {
+		t.Logf("client: operation %s => %s\n", opName, opDescr)
+	}
 
 	t.Logf("client: testing GetInfo() with bad credentials")
+	cli.SetPassword("badSecret")
 	timerStartTime = time.Now()
 	if _, err := cli.GetInfo(); err != nil {
 		t.Logf("client: %s", err)
 	} else {
-		t.Fatalf("expected failure, but got non-error response")
+		t.Fatalf("client: expected failure, but got non-error response")
 	}
 	t.Logf("client: took %s", time.Since(timerStartTime))
 
@@ -118,13 +96,60 @@ func TestClient(t *testing.T) {
 	t.Logf("client: Redfish API Version: %s\n", info.RedfishVersion)
 	t.Logf("client: took %s", time.Since(timerStartTime))
 
-	t.Logf("client: testing cli.GetResource(/redfish/v1/)")
+	t.Logf("client: testing cli.GetResource()")
 	timerStartTime = time.Now()
 	infoResource, err := cli.GetResource("/redfish/v1/")
 	if err != nil {
-		t.Fatalf("client: %s", err)
+		t.Fatalf("client: expected success, but got error: %s", err)
 	}
-	t.Logf("client: Response: %s\n", infoResource)
-	t.Logf("client: took %s", time.Since(timerStartTime))
+	t.Logf("client: GetResource() response: %s\n", infoResource)
 
+	t.Logf("client: testing cli.GetResource() on non-existent dummy endpoint")
+	if _, err := cli.GetResource("/redfish/v1/dummy"); err == nil {
+		t.Fatalf("client: expected failure, but got non-error response")
+	}
+
+	t.Logf("client: testing cli.GetResource() on the path without leading slash")
+	if _, err := cli.GetResource("redfish/v1/"); err != nil {
+		t.Fatalf("client: expected failure, but got non-error response")
+	}
+
+	t.Logf("client: testing secure client")
+	cli = NewClient()
+	cli.SetHost(server.TLS.Hostname)
+	cli.SetPort(server.TLS.Port)
+	cli.SetProtocol(server.TLS.Protocol)
+	cli.SetValidateServerCertificate()
+	cli.SetUsername("admin")
+	cli.SetPassword("secret")
+	if _, err = cli.GetInfo(); err == nil {
+		t.Fatalf("client: expected failure, but got non-error response")
+	}
+	cli.validateServerCert = false
+	if _, err = cli.GetInfo(); err != nil {
+		t.Fatalf("client: expected success, but got error: %s", err)
+	}
+
+	t.Logf("client: testing invalid HTTP method")
+	if _, err := cli.callAPI("\\", "application/json", "/redfish/v1/", []byte{}); err == nil {
+		t.Fatalf("client: expected failure, but got non-error response")
+	}
+
+	t.Logf("client: testing empty HTTP response")
+	if _, err := cli.callAPI("GET", "application/json", "/redfish/v1/empty_response", []byte{}); err == nil {
+		t.Fatalf("client: expected failure, but got non-error response")
+	} else {
+		if !strings.HasPrefix(err.Error(), "response: <nil>, verify url") {
+			t.Fatalf("client: expected failure with 'response: <nil>, verify url', but got: %s", err)
+		}
+	}
+
+	t.Logf("client: testing raw API calls")
+	resp, err := cli.callAPI("GET", "application/json", "/redfish/v1/", []byte{})
+	if err != nil {
+		t.Fatalf("client: expected success, but got error: %s", err)
+	}
+	infoResource, err = newResourceFromBytes(resp)
+
+	t.Logf("client: took %s", time.Since(timerStartTime))
 }

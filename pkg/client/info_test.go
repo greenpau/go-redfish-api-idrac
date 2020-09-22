@@ -5,6 +5,7 @@ package client
 import (
 	"fmt"
 	"io/ioutil"
+	"reflect"
 	"testing"
 )
 
@@ -78,6 +79,17 @@ func TestParseInfoJsonOutput(t *testing.T) {
 			shouldFail: false,
 			shouldErr:  true,
 		},
+		{
+			input: "root_3",
+			exp: &Info{
+				Product:           "Integrated Dell Remote Access Controller",
+				ServiceTag:        "24A8VC9",
+				ManagerMACAddress: "eb:f2:49:84:66:d4",
+				RedfishVersion:    "",
+			},
+			shouldFail: false,
+			shouldErr:  true,
+		},
 	} {
 		// Read response file
 		fp := fmt.Sprintf("%s/%s.json", dataDir, test.input)
@@ -89,7 +101,7 @@ func TestParseInfoJsonOutput(t *testing.T) {
 		}
 
 		// Parse API response
-		info, err := NewInfoFromBytes(content)
+		info, err := newInfoFromBytes(content)
 		if err != nil {
 			if !test.shouldErr {
 				t.Logf("FAIL: Test %d: input '%s', expected to pass, but threw error: %v", i, fp, err)
@@ -102,9 +114,33 @@ func TestParseInfoJsonOutput(t *testing.T) {
 				testFailed++
 				continue
 			}
+			// Parse API response from string
+			infoFromString, infoFromStringError := newInfoFromString(string(content))
+			if infoFromStringError != nil {
+				t.Logf("FAIL: Test %d: input '%s', expected to pass, but got error: %v", i, fp, infoFromStringError)
+				testFailed++
+				continue
+			}
+			if !reflect.DeepEqual(infoFromString, info) {
+				t.Logf("FAIL: Test %d: input '%s', expected to pass, but got value mismatch: '%v' (newInfoFromString) vs. '%v' (newInfoFromBytes)",
+					i, fp, *infoFromString, *info)
+				testFailed++
+				continue
+			}
 		}
 
 		if err == nil {
+			if i == 0 {
+				complianceMessages, compliant := isStructCompliant(info)
+				if !compliant {
+					testFailed++
+				}
+
+				for _, entry := range complianceMessages {
+					t.Logf("%s", entry)
+				}
+			}
+
 			if (info.Product != test.exp.Product) && !test.shouldFail {
 				t.Logf("FAIL: Test %d: input '%s', expected to pass, but failed due to mismatch in '%s' field: '%v' (actual) vs. '%v' (expected)",
 					i, fp, "Product", info.Product, test.exp.Product)

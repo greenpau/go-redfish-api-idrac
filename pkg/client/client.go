@@ -7,6 +7,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	log "github.com/sirupsen/logrus"
+	"io"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -14,24 +15,36 @@ import (
 	"time"
 )
 
+// ReceiverDataLimit is the limit of data in bytes the client will read
+// from a server.
+const ReceiverDataLimit int64 = 1e6
+
+// CliOperation represents supported command line operations
+type CliOperation struct {
+	Name        string
+	Description string
+}
+
 // Client is an instance of iDRAC Redfish API client.
 type Client struct {
-	url      string
-	host     string
-	port     int
-	protocol string
-	username string
-	password string
-	secure   bool
-	rootPath string
+	url                string
+	host               string
+	port               int
+	protocol           string
+	username           string
+	password           string
+	validateServerCert bool
+	rootPath           string
+	dataLimit          int64
 }
 
 // NewClient returns an instance of Client.
 func NewClient() *Client {
 	return &Client{
-		port:     443,
-		protocol: "https",
-		rootPath: "/redfish/v1/",
+		dataLimit: ReceiverDataLimit,
+		port:      443,
+		protocol:  "https",
+		rootPath:  "/redfish/v1/",
 	}
 }
 
@@ -97,36 +110,25 @@ func (cli *Client) SetProtocol(s string) error {
 	return nil
 }
 
-// SetSecure instructs the client to enforce the validation of certificates
+// SetValidateServerCertificate instructs the client to enforce the validation of certificates
 // and check certificate errors.
-func (cli *Client) SetSecure() error {
-	cli.secure = true
+func (cli *Client) SetValidateServerCertificate() error {
+	cli.validateServerCert = true
 	return nil
 }
 
 // GetOperations returns the names of available operations.
-func (cli *Client) GetOperations() map[string]string {
-	operations := make(map[string]string)
-	operations["info"] = "Get basic information about a remote API endpoint"
+func (cli *Client) GetOperations() map[string]*CliOperation {
+	operations := make(map[string]*CliOperation)
+	operations["get-info"] = &CliOperation{
+		Name:        "get-info",
+		Description: "Get basic information about a remote Redfish API endpoint",
+	}
+	operations["get-systems"] = &CliOperation{
+		Name:        "get-info",
+		Description: "Get information about computer systems exposed via Redfish API",
+	}
 	return operations
-}
-
-// GetInfo returns basic information about a system
-func (cli *Client) GetInfo() (*Info, error) {
-	resp, err := cli.callAPI("GET", "", cli.rootPath, []byte{})
-	if err != nil {
-		return nil, err
-	}
-	return NewInfoFromBytes(resp)
-}
-
-// GetResource return raw output from Redfish API server for a specific resource (path)
-func (cli *Client) GetResource(s string) (*Resource, error) {
-	resp, err := cli.callAPI("GET", "", s, []byte{})
-	if err != nil {
-		return nil, err
-	}
-	return NewResourceFromBytes(resp)
 }
 
 func (cli *Client) callAPI(method string, contentType string, urlPath string, payload []byte) ([]byte, error) {
@@ -141,7 +143,7 @@ func (cli *Client) callAPI(method string, contentType string, urlPath string, pa
 		}).Dial,
 		TLSHandshakeTimeout: 10 * time.Second,
 	}
-	if !cli.secure {
+	if !cli.validateServerCert {
 		tr.TLSClientConfig = &tls.Config{
 			InsecureSkipVerify: true,
 		}
@@ -153,12 +155,7 @@ func (cli *Client) callAPI(method string, contentType string, urlPath string, pa
 
 	var req *http.Request
 	var err error
-	if len(payload) == 0 {
-		req, err = http.NewRequest(method, url, bytes.NewBuffer(payload))
-	} else {
-		req, err = http.NewRequest(method, url, bytes.NewBuffer(payload))
-	}
-
+	req, err = http.NewRequest(method, url, bytes.NewBuffer(payload))
 	if err != nil {
 		return nil, err
 	}
@@ -183,11 +180,10 @@ func (cli *Client) callAPI(method string, contentType string, urlPath string, pa
 
 	log.Debugf("API Server responded with %s", res.Status)
 
-	body, err := ioutil.ReadAll(res.Body)
+	dataLimiter := io.LimitReader(res.Body, cli.dataLimit)
+	body, err := ioutil.ReadAll(dataLimiter)
 	if err != nil {
-		if err.Error() != "EOF" {
-			return nil, err
-		}
+		return nil, fmt.Errorf("non-EOF error at url %s: %s", url, err)
 	}
 
 	switch res.StatusCode {

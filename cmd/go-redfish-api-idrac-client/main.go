@@ -29,9 +29,9 @@ func init() {
 	app = versioned.NewPackageManager("go-redfish-api-idrac-client")
 	app.Description = "iDRAC Redfish API Client"
 	app.Documentation = "https://github.com/greenpau/go-redfish-api-idrac/"
-	app.SetVersion(appVersion, "1.0.2")
+	app.SetVersion(appVersion, "1.0.3")
 	app.SetGitBranch(gitBranch, "main")
-	app.SetGitCommit(gitCommit, "88f97b3")
+	app.SetGitCommit(gitCommit, "v1.0.2-3-gfdedfff")
 	app.SetBuildUser(buildUser, "")
 	app.SetBuildDate(buildDate, "")
 }

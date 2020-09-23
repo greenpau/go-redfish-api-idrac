@@ -149,7 +149,7 @@ type computerSystemTrustedModules struct {
 
 type computerSystemMemorySummary struct {
 	MemoryMirroring      string
-	TotalSystemMemoryGiB uint64
+	TotalSystemMemoryGiB interface{} // uint64
 	Status               HealthStatus
 }
 
@@ -259,7 +259,14 @@ func newComputerSystemFromBytes(s []byte) (*ComputerSystem, error) {
 
 	cs.Counters.TotalProcessors = response.ProcessorSummary.Count
 	cs.Counters.LogicalProcessors = response.ProcessorSummary.LogicalProcessorCount
-	cs.Counters.TotalSystemMemory = response.MemorySummary.TotalSystemMemoryGiB
+	switch vt := response.MemorySummary.TotalSystemMemoryGiB.(type) {
+	case uint64:
+		cs.Counters.TotalSystemMemory = response.MemorySummary.TotalSystemMemoryGiB.(uint64)
+	case float64:
+		cs.Counters.TotalSystemMemory = uint64(response.MemorySummary.TotalSystemMemoryGiB.(float64))
+	default:
+		return nil, fmt.Errorf("parsing error: %s, server response: %s, unsupported type: %T", err, string(s[:]), vt)
+	}
 
 	cs.Status = response.Status
 

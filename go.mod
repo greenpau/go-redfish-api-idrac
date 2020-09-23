@@ -7,7 +7,7 @@ require (
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/greenpau/versioned v1.0.23
 	github.com/iancoleman/strcase v0.0.0-20191112232945-16388991a334
-	github.com/magiconair/properties v1.8.3 // indirect
+	github.com/magiconair/properties v1.8.4 // indirect
 	github.com/mitchellh/mapstructure v1.3.3 // indirect
 	github.com/pelletier/go-toml v1.8.1 // indirect
 	github.com/sirupsen/logrus v1.6.0

@@ -16,6 +16,10 @@ iDRAC Redfish API client library written in Go.
 
 ## Getting Started
 
+Tested with:
+
+* Integrated Dell Remote Access Controller, Redfish API Version: `1.4.0`
+
 ### API Client
 
 Install the client by running:

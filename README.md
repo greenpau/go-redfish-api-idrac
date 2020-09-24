@@ -21,7 +21,7 @@ iDRAC Redfish API client library written in Go.
 Install the client by running:
 
 ```
-go get -u github.com/greenpau/go-redfish-api-idrac/go-redfish-api-idrac-client
+go get -u github.com/greenpau/go-redfish-api-idrac/cmd/go-redfish-api-idrac-client
 ```
 
 Prior to using the client, add your credentials via the following environment

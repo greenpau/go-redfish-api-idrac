@@ -1,37 +1,53 @@
----
-before:
-  hooks:
-    - go mod tidy
+project_name: go-redfish-api-idrac-client
+
+release:
+  github:
+    owner: greenpau
+    name: go-redfish-api-idrac
+  draft: false
+  prerelease: auto
+
+checksum:
+  name_template: "{{.ProjectName}}_{{.Version}}_SHA256SUMS"
+
 builds:
   - env:
       - CGO_ENABLED=0
+      - GO111MODULE=on
     goos:
       - linux
-    ldflags:
-      - -w -s
-        -X main.appName=go-redfish-api-idrac-client \
-        -X main.appVersion={{ .Version }} \
-        -X main.gitCommit={{ .Commit }} \
-        -X main.gitBranch={{ .Branch }} \
-        -X main.BuildUser=greenpau \
-        -X main.BuildDate={{ .Date }} \
-        -gcflags="all=-trimpath=$(GOPATH)/src" \
-        -asmflags="all=-trimpath $(GOPATH)/src" cmd/$(APP)/*
-    main: './cmd/go-redfish-api-idrac-client'
+      - windows
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    main: ./cmd/go-redfish-api-idrac-client
+    binary: ./bin/go-redfish-api-idrac-client
+    flags:
+      - -trimpath
+      - -mod=readonly
     asmflags:
-      - 'all=-trimpath={{.Env.GOPATH}}'
+      - all=-trimpath={{.Env.GOPATH}}
     gcflags:
-      - 'all=-trimpath={{.Env.GOPATH}}'
-    binary: go-redfish-api-idrac-client
-archives:
-  - name_template: "go-redfish-api-idrac-client_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}"
-checksum:
-  name_template: 'checksums.txt'
-snapshot:
-  name_template: "{{ .Version }}"
+      - all=-trimpath={{.Env.GOPATH}}
+    ldflags: -s -w
+
+
+nfpms:
+  - id: go-redfish-api-idrac-client
+    maintainer: "Paul Greenberg <greenpau@outlook.com>"
+    file_name_template: >-
+      {{ .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+
 changelog:
   sort: asc
   filters:
     exclude:
-      - '^docs:'
-      - '^test:'
+    - '^docs?:'
+    - '^readme:'
+    - '^tests?:'
+    # - '^\w+\s+' # a hack to remove commit messages without colons thus don't correspond to a package

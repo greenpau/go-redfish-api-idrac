@@ -72,9 +72,9 @@ qtest:
 
 dep:
 	@echo "Making dependencies check ..."
-	@go get -u golang.org/x/lint/golint
-	@go get -u golang.org/x/tools/cmd/godoc
-	@go get -u github.com/kyoh86/richgo
+	@go install golang.org/x/lint/golint@latest
+	@go install github.com/kyoh86/richgo@latest
+	@go install github.com/greenpau/versioned/cmd/versioned@latest
 
 release:
 	@echo "Making release"
